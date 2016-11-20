@@ -12,12 +12,14 @@ consumer = KafkaConsumer('arcsight',
 
 
 
+from elasticsearch import Elasticsearch
+es = Elasticsearch([{'host': 'es2016', 'port': 9200}])
 
 cefRegexHeader = re.compile(r'(?<!\\)(\S+?)\|')
 cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
-
+i=0
 for message in consumer:
-    
+    i+=1
     #print(str(message.value, 'utf-8'))
     parsed = {}
     
@@ -71,5 +73,5 @@ for message in consumer:
         o = parsed
     print(json.dumps(o))    
     
-    
+    es.index(index='arcsight', doc_type='cef', id=i, body=json.loads(json.dumps(o)))
         
