@@ -1,4 +1,4 @@
-
+from elasticsearch import Elasticsearch
 from kafka import KafkaConsumer
 
 import re
