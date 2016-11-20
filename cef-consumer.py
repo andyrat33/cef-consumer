@@ -20,9 +20,38 @@ for message in consumer:
     #print ("%s:%d:%d: key=%s value=%s" % (message.topic, message.partition,
                                           #message.offset, message.key,
                                           #message.value))
+    print(str(message.value, 'utf-8'))
     parsed = {}
-    tokens = re.split(r'(?<!\\)\|', str(message.value, 'utf-8'))
+    cefRegexHeader = re.compile(r'(?<!\\)(\S+?)\|')
+    
+    #tokens = re.split(r'(?<!\\)\|', str(message.value, 'utf-8'))
+    counter = 0
+    cefExtension = 0
+    for matchHeader in re.finditer(cefRegexHeader, str(message.value, 'utf-8')):
+        if counter == 0:
+            parsed['CEFVersion'] = matchHeader.group(1).split('CEF:')[1]
+        elif counter == 1:
+            parsed['DeviceVendor'] = matchHeader.group(1)
+        elif counter == 2:
+            parsed['DeviceProduct'] = matchHeader.group(1)
+        elif counter == 3:
+            parsed['DeviceVersion'] = matchHeader.group(1)
+        elif counter == 4:
+            parsed['DeviceEventClassId'] = matchHeader.group(1)
+        elif counter ==  5:
+            parsed['Name'] =  matchHeader.group(1)
+        elif counter == 6:
+            parsed['Severity'] =  matchHeader.group(1)
+        counter += 1
+    cefExtension = matchHeader.end()
+    
+    
+    
+    print(parsed)
+    print(str(message.value, 'utf-8')[cefExtension:].lstrip())
     Extension = ''
+    
+    
     if len(tokens) == 8:
         Extension = tokens[7] 
     if len(tokens) > 8:
@@ -54,7 +83,7 @@ for message in consumer:
             o[p] = parsed[p]
     else:
         o = parsed
-    print(json.dumps(o))    
+    #print(json.dumps(o))    
     
     #for cef in str(message.value, 'utf-8').split('|'):
         #print(" Value {!s}".format(cef))
