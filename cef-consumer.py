@@ -10,9 +10,11 @@ consumer = KafkaConsumer('arcsight',
                          group_id='cef_consumer_group',
                          bootstrap_servers=['kafka1:9092'])
 
-tokenlist = "|".join(cef_keys) 
-regex = re.compile('('+tokenlist+')=(.*?)\s(?:'+tokenlist+'|$)')
 
+
+
+cefRegexHeader = re.compile(r'(?<!\\)(\S+?)\|')
+cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
 
 for message in consumer:
     # message value and key are raw bytes -- decode if necessary!
@@ -22,7 +24,7 @@ for message in consumer:
                                           #message.value))
     print(str(message.value, 'utf-8'))
     parsed = {}
-    cefRegexHeader = re.compile(r'(?<!\\)(\S+?)\|')
+    
     
     #tokens = re.split(r'(?<!\\)\|', str(message.value, 'utf-8'))
     counter = 0
@@ -47,29 +49,17 @@ for message in consumer:
     
     
     
-    print(parsed)
-    print(str(message.value, 'utf-8')[cefExtension:].lstrip())
-    Extension = ''
+    #print(parsed)
+    Extension = str(message.value, 'utf-8')[cefExtension:].lstrip()
+    #print(extension)
+    # use redis to cache resuls of token set creation 
+    tokenlist = "|".join(set(re.findall(cefRegexExtensions, Extension)))
+    extensionKeys = re.compile('('+tokenlist+')=(.*?)\s(?:'+tokenlist+'|$)')
     
     
-    if len(tokens) == 8:
-        Extension = tokens[7] 
-    if len(tokens) > 8:
-        sys.stderr.write("Parsing error\n")
-        sys.exit(1)
-    parsed['CEFVersion'] = tokens[0].split('CEF:')[1]
-    parsed['DeviceVendor'] = tokens[1]
-    parsed['DeviceProduct'] = tokens[2]
-    parsed['DeviceVersion'] = tokens[3]
-    parsed['SignatureID'] = tokens[4]
-    parsed['Name'] = tokens[5]
-    parsed['Severity'] = tokens[6]
-
-    continue_parsing = False
-    if len(Extension) > 0:
-        continue_parsing = True
+    continue_parsing = True
     while continue_parsing:
-        m = re.search(regex, Extension)
+        m = re.search(extensionKeys, Extension)
         try:
             k,v = m.groups() 
             parsed[k] = v
@@ -83,7 +73,7 @@ for message in consumer:
             o[p] = parsed[p]
     else:
         o = parsed
-    #print(json.dumps(o))    
+    print(json.dumps(o))    
     
     #for cef in str(message.value, 'utf-8').split('|'):
         #print(" Value {!s}".format(cef))
