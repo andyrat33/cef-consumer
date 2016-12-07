@@ -1,5 +1,4 @@
-
-PUT arcsight
+curl -XPUT "http://localhost:9200/arcsight" -d'
 {
   "mappings": {
     "cef": {
@@ -8,11 +7,11 @@ PUT arcsight
           "type":   "date",
           "format": "epoch_millis"
         },
-        "art": {
+        "art": { 
           "type":   "date",
           "format": "epoch_millis"
         },
-        "mrt": {
+        "mrt": { 
           "type":   "date",
           "format": "epoch_millis"
       },
@@ -23,5 +22,4 @@ PUT arcsight
       }
     }
   }
-}
-
+}'
