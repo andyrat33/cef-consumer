@@ -1,0 +1,27 @@
+
+PUT arcsight
+{
+  "mappings": {
+    "cef": {
+      "properties": {
+        "rt": {
+          "type":   "date",
+          "format": "epoch_millis"
+        },
+        "art": {
+          "type":   "date",
+          "format": "epoch_millis"
+        },
+        "mrt": {
+          "type":   "date",
+          "format": "epoch_millis"
+      },
+        "ad.TIMESTAMP.d": {
+          "type":   "date",
+          "format": "epoch_millis"
+        }
+      }
+    }
+  }
+}
+
