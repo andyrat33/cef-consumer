@@ -71,9 +71,9 @@ for message in consumer:
             o[p] = parsed[p]
     else:
         o = parsed
-    print(json.dumps(o))    
-    #print("{eventId}".format(**parsed))
-
+    #print(json.dumps(o))    
+    print("{rt} {name} {catdt}".format(**parsed))
+    
     es.index(index='arcsight', doc_type='cef', body=json.loads(json.dumps(o)))
 
 
