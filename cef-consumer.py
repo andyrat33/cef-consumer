@@ -81,7 +81,8 @@ for message in consumer:
             Extension = Extension.replace(k+'='+v, '').lstrip()
         except AttributeError:
             continue_parsing = False
-
+            
+    parsed['cef_consumerId'] = config.get('cef_consumer', 'id')
     o = {}
     if len(print_keys) > 0:
         for p in print_keys:
@@ -89,7 +90,7 @@ for message in consumer:
     else:
         o = parsed
     #print(json.dumps(o))    
-    parsed['cef_consumerId'] = config.get('cef_consumer', 'id')
+    
     print("{cef_consumerId} {rt} {name} {catdt}".format(**parsed))
     
     es.index(index='arcsight', doc_type='cef', body=json.loads(json.dumps(o)))
