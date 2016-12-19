@@ -8,6 +8,23 @@ from kafka import KafkaConsumer
 if sys.version_info[0] < 3:
     raise "Must be using Python 3"
 
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
+
+def get_config():
+    """ Return my config object. """
+    conf = ConfigParser()
+    conf.read('config/cef_consumer.cfg')
+    return conf
+
+config = get_config()
+
+
+
 # kafka settings
 topic = 'arcsight'
 kafka = ['kafka2:9092']
@@ -72,7 +89,8 @@ for message in consumer:
     else:
         o = parsed
     #print(json.dumps(o))    
-    print("{rt} {name} {catdt}".format(**parsed))
+    parsed['cef_consumerId'] = config.get('cef_consumer', 'id')
+    print("{cef_consumerId} {rt} {name} {catdt}".format(**parsed))
     
     es.index(index='arcsight', doc_type='cef', body=json.loads(json.dumps(o)))
 
