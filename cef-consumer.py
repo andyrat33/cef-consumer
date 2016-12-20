@@ -1,5 +1,6 @@
 #cef-consumer.py
 import re
+import os
 import sys
 import json
 import time
@@ -26,7 +27,8 @@ def get_config():
 
 config = get_config()
 
-
+# config.get('cef_consumer', 'id')
+# store the config in cef-consumer.ini
 
 # kafka settings
 topic = 'arcsight'
@@ -85,7 +87,7 @@ for message in consumer:
         except AttributeError:
             continue_parsing = False
             
-    parsed['cef_consumerId'] = config.get('cef_consumer', 'id')
+    parsed['cef_consumerId'] = os.environ.get("cef-consumerId", 'default')
     o = {}
     if len(print_keys) > 0:
         for p in print_keys:
