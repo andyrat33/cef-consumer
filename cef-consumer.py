@@ -4,6 +4,8 @@ import sys
 import json
 from elasticsearch import Elasticsearch
 from kafka import KafkaConsumer
+import time
+
 
 if sys.version_info[0] < 3:
     raise "Must be using Python 3"
@@ -89,10 +91,9 @@ for message in consumer:
             o[p] = parsed[p]
     else:
         o = parsed
-    #print(json.dumps(o))    
-    
-    print("{cef_consumerId} {rt} {name} {catdt}".format(**parsed))
-    
+    #print(json.dumps(o))
+    # print a log line for docker logs
+    print("{cef_consumerId} {logdate} {name} {catdt} {count}".format(**parsed,logdate=time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(int(parsed['rt'])/1000.)),count=i))
     es.index(index='arcsight', doc_type='cef', body=json.loads(json.dumps(o)))
 
 
