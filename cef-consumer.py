@@ -47,7 +47,7 @@ i=0
 for message in consumer:
     i+=1
 
-    print(str(message.value, 'utf-8'))
+    #print(str(message.value, 'utf-8'))
     parsed = {}
     counter = 0
     cefExtension = 0
