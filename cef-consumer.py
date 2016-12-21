@@ -41,13 +41,13 @@ print_keys = set()
 consumer = KafkaConsumer(topic, group_id='cef_consumer_group',bootstrap_servers=kafka)
 es = Elasticsearch([elasticsearch])
 
-cefRegexHeader = re.compile(r'(?<!\\)(\S+?)\|')
+cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
 cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
 i=0
 for message in consumer:
     i+=1
 
-    #print(str(message.value, 'utf-8'))
+    print(str(message.value, 'utf-8'))
     parsed = {}
     counter = 0
     cefExtension = 0
