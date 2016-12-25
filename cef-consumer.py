@@ -27,13 +27,15 @@ config = get_config()
 
 # config.get('cef_consumer', 'id')
 # store the config in cef-consumer.ini
-kafka = list()
+
 kafka = [server for server in config['kafka']['kafka'].split(',')]
 # kafka settings
 topic = config['kafka']['topic']
 #kafka = ['kafka2:9092']
-# elasticsearch
-elasticsearch = {'host': 'es2016', 'port': 9200}
+elasticsearch = dict()
+elasticsearch['host'] = config.get('elasticsearch','host')
+elasticsearch['port'] = config.get('elasticsearch','port')                     
+#elasticsearch = {'host': 'es2016', 'port': 9200}
 
 print_keys = set()
 
