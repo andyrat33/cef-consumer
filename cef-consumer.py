@@ -98,4 +98,4 @@ for message in consumer:
     # print(json.dumps(o))
     # print a log line for docker logs
     print("{cef_consumerId} {logdate} {name} {catdt} {count}".format(**parsed, logdate=time.strftime('%d/%m/%Y %H:%M:%S', time.gmtime(int(parsed['rt']) / 1000.)), count=i))
-    es.index(index='arcsight', doc_type='cef', body=json.loads(json.dumps(o)))
+    es.index(index=config.get('elasticsearch','index'), doc_type=config.get('elasticsearch','doc_type'), body=json.loads(json.dumps(o)))
