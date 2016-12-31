@@ -25,21 +25,27 @@ def get_config():
 
 config = get_config()
 
-# config.get('cef_consumer', 'id')
-# store the config in cef-consumer.ini
+# store the config in cef_consumer.cfg
 
-kafka = [server for server in config['kafka']['kafka'].split(',')]
 # kafka settings
+kafka = [server for server in config['kafka']['kafka'].split(',')]
 topic = config['kafka']['topic']
-#kafka = ['kafka2:9092']
+try:
+    group_id = config.get('kafka', 'group_id')
+except:
+    print("Error : {}".format(sys.exc_info()[0]))
+
+if not group_id:
+    group_id = 'cef_consumer_group'
+
+# elasticsearch settings
 elasticsearch = dict()
 elasticsearch['host'] = config.get('elasticsearch','host')
 elasticsearch['port'] = config.get('elasticsearch','port')                     
-#elasticsearch = {'host': 'es2016', 'port': 9200}
 
 print_keys = set()
 
-consumer = KafkaConsumer(topic, group_id='cef_consumer_group', bootstrap_servers=kafka)
+consumer = KafkaConsumer(topic, group_id=group_id, bootstrap_servers=kafka)
 es = Elasticsearch([elasticsearch])
 
 cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
@@ -98,4 +104,5 @@ for message in consumer:
     # print(json.dumps(o))
     # print a log line for docker logs
     print("{cef_consumerId} {logdate} {name} {catdt} {count}".format(**parsed, logdate=time.strftime('%d/%m/%Y %H:%M:%S', time.gmtime(int(parsed['rt']) / 1000.)), count=i))
-    es.index(index=config.get('elasticsearch','index'), doc_type=config.get('elasticsearch','doc_type'), body=json.loads(json.dumps(o)))
+    es.index(index=config.get('elasticsearch', 'index'), doc_type=config.get('elasticsearch', 'doc_type'),
+             body=json.loads(json.dumps(o)))
