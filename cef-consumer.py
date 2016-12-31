@@ -30,11 +30,11 @@ config = get_config()
 # kafka settings
 kafka = [server for server in config['kafka']['kafka'].split(',')]
 topic = config['kafka']['topic']
+group_id = ''
 try:
     group_id = config.get('kafka', 'group_id')
 except:
     print("Error : {}".format(sys.exc_info()[0]))
-
 if not group_id:
     group_id = 'cef_consumer_group'
 
