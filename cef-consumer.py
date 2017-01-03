@@ -94,7 +94,7 @@ for message in consumer:
         except AttributeError:
             continue_parsing = False
 
-    parsed['cef_consumerId'] = os.environ.get("cef-consumerId", 'default')
+    parsed['cef_consumerId'] = os.environ.get("cef-consumerId", config.get('cef_consumer', 'id'))
     o = {}
     if len(print_keys) > 0:
         for p in print_keys:
@@ -104,5 +104,4 @@ for message in consumer:
     # print(json.dumps(o))
     # print a log line for docker logs
     print("{cef_consumerId} {logdate} {name} {catdt} {count}".format(**parsed, logdate=time.strftime('%d/%m/%Y %H:%M:%S', time.gmtime(int(parsed['rt']) / 1000.)), count=i))
-    es.index(index=config.get('elasticsearch', 'index'), doc_type=config.get('elasticsearch', 'doc_type'),
-             body=json.loads(json.dumps(o)))
+    es.index(index=config.get('elasticsearch', 'index'), body=json.loads(json.dumps(o)), doc_type=config.get('elasticsearch', 'doc_type'))
