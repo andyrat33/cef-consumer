@@ -55,9 +55,11 @@ statsCounter = int(0)
 def storeStats():
     global statsCounter, cef_consumerId
     r.incrby(name='count',amount=statsCounter)
-    score = datetime.datetime.now().timestamp()
-    r.hmset(score, dict(count=int(statsCounter), id=cef_consumerId))
-    print("Score: {score} stats counter: {count} id: {id}".format(score=score, count=r.hget(score, 'count'), id=r.hget(score, 'id')))
+    score = datetime.datetime.now().strftime('%s')
+    zkey = "cef_consumer:" + cef_consumerId
+    date = score
+    statsToStore = json.dumps({"date":date, 'count':statsCounter,'cef_consumerId':cef_consumerId})
+    r.zadd(zkey, int(score), statsToStore)
     statsCounter = 0
 
 cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
