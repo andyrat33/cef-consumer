@@ -9,8 +9,8 @@ config = {
 }
 
 r = redis.StrictRedis(**config)
-counter = r.get(name="count")
-print("Current count : {}".format(int(counter)))
+#counter = r.get(name="count")
+#print("Current count : {}".format(int(counter)))
 
 
 
