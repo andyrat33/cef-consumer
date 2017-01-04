@@ -4,8 +4,10 @@ import os
 import sys
 import json
 import time
+import datetime
 from elasticsearch import Elasticsearch
 from kafka import KafkaConsumer
+from stats_tracker import do_every, r
 
 if sys.version_info[0] < 3:
     raise "Must be using Python 3"
@@ -47,12 +49,27 @@ print_keys = set()
 
 consumer = KafkaConsumer(topic, group_id=group_id, bootstrap_servers=kafka)
 es = Elasticsearch([elasticsearch])
+# Added cef-consumerId as a global to use for store stats in redis
+cef_consumerId = os.environ.get('cef-consumerId', config.get('cef_consumer', 'id'))
+statsCounter = int(0)
+def storeStats():
+    global statsCounter, cef_consumerId
+    r.incrby(name='count',amount=statsCounter)
+    score = datetime.datetime.now().timestamp()
+    r.hmset(score, dict(count=int(statsCounter), id=cef_consumerId))
+    print("Score: {score} stats counter: {count} id: {id}".format(score=score, count=r.hget(score, 'count'), id=r.hget(score, 'id')))
+    statsCounter = 0
 
 cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
 cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
 i = 0
+
+do_every(30, storeStats)
+
 for message in consumer:
     i += 1
+    statsCounter += 1
+
 
     # print(str(message.value, 'utf-8'))
     parsed = {}
@@ -94,7 +111,7 @@ for message in consumer:
         except AttributeError:
             continue_parsing = False
 
-    parsed['cef_consumerId'] = os.environ.get("cef-consumerId", config.get('cef_consumer', 'id'))
+    parsed['cef_consumerId'] = cef_consumerId
     o = {}
     if len(print_keys) > 0:
         for p in print_keys:
