@@ -3,4 +3,4 @@ ADD . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
 ENTRYPOINT [ "python" ]
-CMD [ "/app/cef_consumer1.py"]
+CMD [ "/app/cef-consumer.py"]
