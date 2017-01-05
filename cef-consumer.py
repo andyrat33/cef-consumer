@@ -72,7 +72,7 @@ cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
 cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
 i = 0
 
-do_every(30, storeStats)
+do_every(600, storeStats)
 
 for message in consumer:
     i += 1
