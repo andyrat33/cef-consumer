@@ -1,16 +1,8 @@
-import redis
 import threading
 
 
-config = {
-    'host': 'docker2',
-    'port': 6379,
-    'db': 0,
-}
 
-r = redis.StrictRedis(**config)
-#counter = r.get(name="count")
-#print("Current count : {}".format(int(counter)))
+
 
 
 
@@ -22,12 +14,6 @@ def do_every(interval, worker_func, iterations = 0):
             ).start ()
 
     worker_func()
-
-def print_hw ():
-    print("hello world")
-
-def print_so ():
-    print("stackoverflow")
 
 
 # call print_so every second, 5 times total

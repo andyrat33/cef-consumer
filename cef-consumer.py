@@ -5,9 +5,10 @@ import sys
 import json
 import time
 import datetime
+import redis
 from elasticsearch import Elasticsearch
 from kafka import KafkaConsumer
-from stats_tracker import do_every, r
+from stats_tracker import do_every
 
 if sys.version_info[0] < 3:
     raise "Must be using Python 3"
@@ -17,17 +18,22 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
-
+# store the config in cef_consumer.cfg
 def get_config():
     """ Return my config object. """
     conf = ConfigParser()
     conf.read('config/cef_consumer.cfg')
     return conf
 
-
 config = get_config()
 
-# store the config in cef_consumer.cfg
+rconfig = {
+    'host': config['redis']['host'],
+    'port': config['redis']['port'],
+    'db': config['redis']['db'],
+}
+
+r = redis.StrictRedis(**rconfig)
 
 # kafka settings
 kafka = [server for server in config['kafka']['kafka'].split(',')]
