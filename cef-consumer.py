@@ -55,11 +55,11 @@ statsCounter = int(0)
 def storeStats():
     global statsCounter, cef_consumerId
     r.incrby(name='count',amount=statsCounter)
-    score = datetime.datetime.now().strftime('%s')
+    score = int(datetime.datetime.now().strftime('%s'))
     zkey = "cef_consumer:" + cef_consumerId
     date = score
     statsToStore = json.dumps({"date":date, 'count':statsCounter,'cef_consumerId':cef_consumerId})
-    r.zadd(zkey, int(score), statsToStore)
+    r.zadd(zkey, score, statsToStore)
     statsCounter = 0
 
 cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
