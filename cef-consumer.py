@@ -4,8 +4,11 @@ import os
 import sys
 import json
 import time
+import datetime
+import redis
 from elasticsearch import Elasticsearch
 from kafka import KafkaConsumer
+from stats_tracker import do_every
 
 if sys.version_info[0] < 3:
     raise "Must be using Python 3"
@@ -15,17 +18,22 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
-
+# store the config in cef_consumer.cfg
 def get_config():
     """ Return my config object. """
     conf = ConfigParser()
     conf.read('config/cef_consumer.cfg')
     return conf
 
-
 config = get_config()
 
-# store the config in cef_consumer.cfg
+rconfig = {
+    'host': config['redis']['host'],
+    'port': config['redis']['port'],
+    'db': config['redis']['db'],
+}
+
+r = redis.StrictRedis(**rconfig)
 
 # kafka settings
 kafka = [server for server in config['kafka']['kafka'].split(',')]
@@ -47,12 +55,29 @@ print_keys = set()
 
 consumer = KafkaConsumer(topic, group_id=group_id, bootstrap_servers=kafka)
 es = Elasticsearch([elasticsearch])
+# Added cef-consumerId as a global to use for store stats in redis
+cef_consumerId = os.environ.get('cef-consumerId', config.get('cef_consumer', 'id'))
+statsCounter = int(0)
+def storeStats():
+    global statsCounter, cef_consumerId
+    r.incrby(name='count',amount=statsCounter)
+    score = int(datetime.datetime.now().strftime('%s'))
+    zkey = "cef_consumer:" + cef_consumerId
+    date = score
+    statsToStore = json.dumps({"date":date, 'count':statsCounter,'cef_consumerId':cef_consumerId})
+    r.zadd(zkey, score, statsToStore)
+    statsCounter = 0
 
 cefRegexHeader = re.compile(r'(.*?)(?<!\\)\|')
 cefRegexExtensions = re.compile(r'(\S+)(?<!\\)=')
 i = 0
+
+do_every(600, storeStats)
+
 for message in consumer:
     i += 1
+    statsCounter += 1
+
 
     # print(str(message.value, 'utf-8'))
     parsed = {}
@@ -94,7 +119,7 @@ for message in consumer:
         except AttributeError:
             continue_parsing = False
 
-    parsed['cef_consumerId'] = os.environ.get("cef-consumerId", config.get('cef_consumer', 'id'))
+    parsed['cef_consumerId'] = cef_consumerId
     o = {}
     if len(print_keys) > 0:
         for p in print_keys:
